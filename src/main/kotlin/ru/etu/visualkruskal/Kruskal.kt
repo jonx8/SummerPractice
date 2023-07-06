@@ -127,7 +127,7 @@ class Kruskal {
 
     fun doAlgorithm(): ArrayList<Edge>{
         if(!isGraphConnected()) return edges
-        edges.sortBy { it -> it.weight }
+        edges.sortBy { it.weight }
 
         for(key in 'a'..'z'){
             val value = nodes[key]
@@ -177,7 +177,7 @@ class Kruskal {
         components.add(comp1+comp2)
     }
 
-    fun clear_graph(){
+    fun clearGraph(){
         edges.clear()
         nodes.clear()
         components.clear()
@@ -187,7 +187,7 @@ class Kruskal {
     fun isGraphConnected(): Boolean{
         if(nodes.size == 0) return false
         val visitedNodes = ArrayList<Char>()
-        var firstNode: Char = 'a'
+        var firstNode = 'a'
         for(key in 'a'..'z'){
             val value = nodes[key]
             if(value != null){
@@ -196,8 +196,7 @@ class Kruskal {
             }
         }
 
-        if(bfc(firstNode, visitedNodes) == nodes.size) return true
-        return false
+        return bfc(firstNode, visitedNodes) == nodes.size
     }
 
     private fun bfc(node: Char, visitedNodes: ArrayList<Char>): Int{
