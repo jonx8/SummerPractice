@@ -6,47 +6,47 @@ class Kruskal {
     private var edges = ArrayList<Edge>()
     private var components = ArrayList<String>()
     private var resEdges = ArrayList<Edge>()
-    private var Nodes = HashMap<Char, ArrayList<Char>>()
+    private var nodes = HashMap<Char, ArrayList<Char>>()
 
     fun addEdge(node1: Char, node2: Char, weight: Int): String{
         if(node1 in 'a'..'z' && node2 in 'a'..'z' && weight > 0) {
-            val value1 = Nodes[node1]
-            val value2 = Nodes[node2]
-            if(value1 != null && value2 != null){
-                if(node1 in value2)
-                    return "Такое ребро уже есть"
+            val connectedNodes1 = nodes[node1]
+            val connectedNodes2 = nodes[node2]
+            if(connectedNodes1 != null && connectedNodes2 != null){
+                if(node1 in connectedNodes2)
+                    return "Such an edge already exists"
                 else{
-                    value1.add(node2)
-                    value2.add(node1)
+                    connectedNodes1.add(node2)
+                    connectedNodes2.add(node1)
                 }
             }
-            if(value1 == null && value2 != null){
-                value2.add(node1)
-                Nodes[node1] = ArrayList()
-                Nodes[node1]!!.add(node2)
+            if(connectedNodes1 == null && connectedNodes2 != null){
+                connectedNodes2.add(node1)
+                nodes[node1] = ArrayList()
+                nodes[node1]!!.add(node2)
             }
-            if(value1 != null && value2 == null){
-                value1.add(node2)
-                Nodes[node2] = ArrayList()
-                Nodes[node2]!!.add(node1)
+            if(connectedNodes1 != null && connectedNodes2 == null){
+                connectedNodes1.add(node2)
+                nodes[node2] = ArrayList()
+                nodes[node2]!!.add(node1)
             }
-            if(value1 == null && value2 == null){
-                Nodes[node1] = ArrayList()
-                Nodes[node2] = ArrayList()
-                Nodes[node1]!!.add(node2)
-                Nodes[node2]!!.add(node1)
+            if(connectedNodes1 == null && connectedNodes2 == null){
+                nodes[node1] = ArrayList()
+                nodes[node2] = ArrayList()
+                nodes[node1]!!.add(node2)
+                nodes[node2]!!.add(node1)
             }
 
             if (node1 < node2)
                 edges.add(Edge(node1, node2, weight))
             else
                 edges.add(Edge(node2, node1, weight))
-            return "Успешно добавлено ребро"
+            return "Edge added"
         }
-        return "Вершины должны быть латинскими буквами"
+        return "Node name must be a latin letter and the edge weight must be a positive number"
     }
 
-    fun delEdge(node1: Char, node2: Char){
+    fun delEdge(node1: Char, node2: Char): String{
         val tempNode1: Char
         val tempNode2: Char
         if(node1 > node2){
@@ -60,37 +60,41 @@ class Kruskal {
         for(edge in edges){
             if(tempNode1 == edge.node1 && tempNode2 == edge.node2){
                 edges.remove(edge)
-                if(Nodes[tempNode1]!!.size != 1 && Nodes[tempNode2]!!.size != 1) {
-                    Nodes[tempNode1]!!.remove(tempNode2)
-                    Nodes[tempNode2]!!.remove(tempNode1)
-                    break
+                if(nodes[tempNode1]!!.size != 1 && nodes[tempNode2]!!.size != 1) {
+                    nodes[tempNode1]!!.remove(tempNode2)
+                    nodes[tempNode2]!!.remove(tempNode1)
                 }
-                else if(Nodes[tempNode1]!!.size == 1){
-                    Nodes[tempNode2]!!.remove(tempNode1)
-                    Nodes.remove(tempNode1)
+                else if(nodes[tempNode1]!!.size == 1){
+                    nodes[tempNode2]!!.remove(tempNode1)
+                    nodes.remove(tempNode1)
                 }
                 else{
-                    Nodes[tempNode1]!!.remove(tempNode2)
-                    Nodes.remove(tempNode2)
+                    nodes[tempNode1]!!.remove(tempNode2)
+                    nodes.remove(tempNode2)
                 }
+                return "Edge removed"
             }
         }
+        return "There is no such edge in the graph"
     }
 
-    fun addNode(nodeName: Char){
+    fun addNode(nodeName: Char): String{
         if(nodeName in 'a'..'z') {
-            val value = Nodes[nodeName]
-            if(value == null) {
-                Nodes[nodeName] = ArrayList<Char>()
+            val connectedNodes = nodes[nodeName]
+            if(connectedNodes == null) {
+                nodes[nodeName] = ArrayList<Char>()
             }
+            else return "Such a node already exists"
+            return "Node added"
         }
+        return "Node name must be a latin letter"
     }
 
-    fun delNode(nodeName: Char){
-        val connectedNodes = Nodes[nodeName]
+    fun delNode(nodeName: Char): String{
+        val connectedNodes = nodes[nodeName]
         if(connectedNodes != null) {
             for(node in connectedNodes) {
-                Nodes[node]!!.remove(nodeName)
+                nodes[node]!!.remove(nodeName)
             }
 
             val connectedEdges = ArrayList<Edge>()
@@ -104,9 +108,10 @@ class Kruskal {
                 edges.remove(edge)
             }
 
-            Nodes.remove(nodeName)
-
+            nodes.remove(nodeName)
+            return "Node deleted"
         }
+        return "There is no such a node"
     }
 
     fun createGraph(listOfEdges: List<String>){
@@ -130,11 +135,11 @@ class Kruskal {
     }
 
     fun doAlgorithm(): ArrayList<Edge>{
-        if(!isGraphConnected()) return resEdges
+        if(!isGraphConnected()) return edges
         edges.sortBy { it -> it.weight }
 
         for(key in 'a'..'z'){
-            val value = Nodes[key]
+            val value = nodes[key]
             if(value != null){
                 components.add(key.toString())
             }
@@ -145,22 +150,22 @@ class Kruskal {
         for(i in 0..edges.size){
             comp1 = getComp(edges[i].node1)
             comp2 = getComp(edges[i].node2)
-            if(comp1 != comp2 || comp1.isEmpty()) {
+           if(comp1 != comp2 || comp1.isEmpty()) {
                 edges[i].state = EdgeState.INCLUDED
                 resEdges.add(edges[i])
                 uniteComps(comp1, comp2)
-                if(resEdges.size == Nodes.size - 1)
+                if(resEdges.size == nodes.size - 1)
                     break
-            }
+           }
             else{
                 edges[i].state = EdgeState.DISCARDED
-            }
+           }
         }
         return edges
     }
 
     fun getNodes(): HashMap<Char, ArrayList<Char>>{
-        return Nodes
+        return nodes
     }
 
     fun getEdges(): ArrayList<Edge>{
@@ -183,31 +188,31 @@ class Kruskal {
 
     fun clear_graph(){
         edges.clear()
-        Nodes.clear()
+        nodes.clear()
         components.clear()
         resEdges.clear()
     }
 
     fun isGraphConnected(): Boolean{
-        if(Nodes.size == 0) return false
+        if(nodes.size == 0) return false
         val visitedNodes = ArrayList<Char>()
         var firstNode: Char = 'a'
         for(key in 'a'..'z'){
-            val value = Nodes[key]
+            val value = nodes[key]
             if(value != null){
                 firstNode = key
                 break
             }
         }
 
-        if(bfc(firstNode, visitedNodes) == Nodes.size) return true
+        if(bfc(firstNode, visitedNodes) == nodes.size) return true
         return false
     }
 
     private fun bfc(node: Char, visitedNodes: ArrayList<Char>): Int{
         var countOfVisited = 1
         visitedNodes.add(node)
-        val connectedNodes = Nodes[node]!!
+        val connectedNodes = nodes[node]!!
         for(tempNode in connectedNodes){
             if(tempNode !in visitedNodes)
                 countOfVisited += bfc(tempNode, visitedNodes)
@@ -221,5 +226,14 @@ class Kruskal {
         for(edge in edges){
             edge.state = EdgeState.NOT_SEEN
         }
+    }
+
+    fun getWeight(): Int{
+        var weight = 0
+        for(edge in edges){
+            if(edge.state == EdgeState.INCLUDED)
+                weight += edge.weight
+        }
+        return weight
     }
 }
