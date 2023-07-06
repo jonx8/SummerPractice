@@ -9,12 +9,12 @@ class Kruskal {
     private var nodes = HashMap<Char, ArrayList<Char>>()
 
     fun addEdge(node1: Char, node2: Char, weight: Int): String{
-        if(node1 in 'a'..'z' && node2 in 'a'..'z') {
+        if(node1 in 'a'..'z' && node2 in 'a'..'z' && node1 != node2) {
             val connectedNodes1 = nodes[node1]
             val connectedNodes2 = nodes[node2]
             if(connectedNodes1 != null && connectedNodes2 != null){
                 if(node1 in connectedNodes2)
-                    return "Such an edge already exists"
+                    return "Such edge already exists"
                 else{
                     connectedNodes1.add(node2)
                     connectedNodes2.add(node1)
@@ -43,6 +43,7 @@ class Kruskal {
                 edges.add(Edge(node2, node1, weight))
             return "Edge added"
         }
+        if(node1 == node2) return "Nodes must be different"
         return "Node name must be a latin letter"
     }
 
@@ -60,18 +61,8 @@ class Kruskal {
         for(edge in edges){
             if(tempNode1 == edge.node1 && tempNode2 == edge.node2){
                 edges.remove(edge)
-                if(nodes[tempNode1]!!.size != 1 && nodes[tempNode2]!!.size != 1) {
-                    nodes[tempNode1]!!.remove(tempNode2)
-                    nodes[tempNode2]!!.remove(tempNode1)
-                }
-                else if(nodes[tempNode1]!!.size == 1){
-                    nodes[tempNode2]!!.remove(tempNode1)
-                    nodes.remove(tempNode1)
-                }
-                else{
-                    nodes[tempNode1]!!.remove(tempNode2)
-                    nodes.remove(tempNode2)
-                }
+                nodes[tempNode1]!!.remove(tempNode2)
+                nodes[tempNode2]!!.remove(tempNode1)
                 return "Edge removed"
             }
         }
@@ -84,7 +75,7 @@ class Kruskal {
             if(connectedNodes == null) {
                 nodes[nodeName] = ArrayList<Char>()
             }
-            else return "Such a node already exists"
+            else return "Such node already exists"
             return "Node added"
         }
         return "Node name must be a latin letter"
@@ -111,7 +102,7 @@ class Kruskal {
             nodes.remove(nodeName)
             return "Node deleted"
         }
-        return "There is no such a node"
+        return "There is no such node"
     }
 
     fun createGraph(listOfEdges: List<String>){
@@ -150,16 +141,16 @@ class Kruskal {
         for(i in 0..edges.size){
             comp1 = getComp(edges[i].node1)
             comp2 = getComp(edges[i].node2)
-           if(comp1 != comp2 || comp1.isEmpty()) {
+            if(comp1 != comp2 || comp1.isEmpty()) {
                 edges[i].state = EdgeState.INCLUDED
                 resEdges.add(edges[i])
                 uniteComps(comp1, comp2)
                 if(resEdges.size == nodes.size - 1)
                     break
-           }
+            }
             else{
                 edges[i].state = EdgeState.DISCARDED
-           }
+            }
         }
         return edges
     }
