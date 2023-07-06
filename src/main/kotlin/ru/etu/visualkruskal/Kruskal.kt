@@ -9,7 +9,7 @@ class Kruskal {
     private var nodes = HashMap<Char, ArrayList<Char>>()
 
     fun addEdge(node1: Char, node2: Char, weight: Int): String{
-        if(node1 in 'a'..'z' && node2 in 'a'..'z' && weight > 0) {
+        if(node1 in 'a'..'z' && node2 in 'a'..'z') {
             val connectedNodes1 = nodes[node1]
             val connectedNodes2 = nodes[node2]
             if(connectedNodes1 != null && connectedNodes2 != null){
@@ -43,7 +43,7 @@ class Kruskal {
                 edges.add(Edge(node2, node1, weight))
             return "Edge added"
         }
-        return "Node name must be a latin letter and the edge weight must be a positive number"
+        return "Node name must be a latin letter"
     }
 
     fun delEdge(node1: Char, node2: Char): String{
