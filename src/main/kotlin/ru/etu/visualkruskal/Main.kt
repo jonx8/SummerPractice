@@ -7,7 +7,7 @@ import javafx.stage.Stage
 
 class MainWindow: Application() {
     override fun start(stage: Stage) {
-        val fxmlLoader = FXMLLoader(Main::class.java.getResource("main-view.fxml"))
+        val fxmlLoader = FXMLLoader(MainWindow::class.java.getResource("main-view.fxml"))
 
         //drawing test, should be deleted later
         val testGraph = Kruskal()
