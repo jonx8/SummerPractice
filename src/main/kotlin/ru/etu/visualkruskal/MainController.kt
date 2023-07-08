@@ -5,6 +5,7 @@ import javafx.scene.control.*
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.scene.text.Text
+import java.io.File
 
 
 class MainController {
@@ -41,12 +42,20 @@ class MainController {
             " -fx-max-width:300px; -fx-max-height: 20px; -fx-pref-width: 300px; -fx-pref-height: 20px;"
 
         val result = fileDialog.showAndWait()
-        /*
+        graphPane.children.clear()
         if (result.isPresent) {
-            commentText.text = result.get()
-           //test, should be deleted later
+            val input = File(result.get())
+            if(input.exists()) {
+                if(input.length() != 0L && input.canRead()) {
+                    if (graphWrapper.getGraphFromFile(input.readLines()))
+                        commentText.text = "Graph read from file"
+                    else commentText.text = "Incorrect data in file"
+                }
+                else commentText.text = "File must be not empty"
+            }
+            else commentText.text = "There are no such file"
         }
-        */
+        drawGraph()
     }
 
     @FXML
