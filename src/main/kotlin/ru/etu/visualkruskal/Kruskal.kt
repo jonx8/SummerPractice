@@ -105,13 +105,33 @@ class Kruskal {
         return "There is no such node"
     }
 
-    fun createGraph(listOfEdges: List<String>){
+    fun createGraph(listOfEdges: List<String>): Boolean{
+        val oldEdges = edges
+        val oldNodes = nodes
+        edges = ArrayList()
+        nodes = HashMap()
+        var tempList: List<String>
         for(edge in listOfEdges){
-            val node1: Char = edge.split(" ")[0].first()
-            val node2: Char = edge.split(" ")[1].first()
-            val weight: Int = edge.split(" ")[2].toInt()
-            addEdge(node1, node2, weight)
+            tempList = edge.split(" ")
+            if(tempList.size == 3) {
+                val node1: Char = tempList[0].first()
+                val node2: Char = tempList[1].first()
+                val weight: Int = tempList[2].toInt()
+                if(addEdge(node1, node2, weight) != "Edge added") {
+                    clearGraph()
+                    edges = oldEdges
+                    nodes = oldNodes
+                    return false
+                }
+            }
+            else{
+                clearGraph()
+                edges = oldEdges
+                nodes = oldNodes
+                return false
+            }
         }
+        return true
     }
 
     fun getGraphByStep(step: Int): ArrayList<Edge>{
@@ -187,14 +207,7 @@ class Kruskal {
     fun isGraphConnected(): Boolean{
         if(nodes.size == 0) return false
         val visitedNodes = ArrayList<Char>()
-        var firstNode = 'a'
-        for(key in 'a'..'z'){
-            val value = nodes[key]
-            if(value != null){
-                firstNode = key
-                break
-            }
-        }
+        val firstNode = nodes.keys.elementAt(0)
 
         return bfc(firstNode, visitedNodes) == nodes.size
     }

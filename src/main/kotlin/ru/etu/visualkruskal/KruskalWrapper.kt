@@ -19,6 +19,16 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
         totalStepsNumber = drawableVertices.size
     }
 
+    fun getGraphFromFile(inputList: List<String>): Boolean{
+        if(kruskal.createGraph(inputList)) {
+            drawableEdges.clear()
+            drawableVertices.clear()
+            setVerticesCoordinates()
+            setEdgesCoordinates()
+            return true
+        }
+        return false
+    }
     fun addInputEdge(inputList: ArrayList<String>) {
         //to do
     }
