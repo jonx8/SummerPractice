@@ -2,6 +2,7 @@ package ru.etu.visualkruskal
 
 import javafx.fxml.FXML
 import javafx.scene.control.*
+import javafx.scene.input.KeyCode
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.scene.text.Text
@@ -10,6 +11,7 @@ import java.io.File
 const val dragBorder = 40
 
 class MainController {
+
     @FXML
     private lateinit var graphPane: Pane
 
@@ -18,6 +20,9 @@ class MainController {
 
     @FXML
     private lateinit var toolsMenu: MenuButton
+
+    @FXML
+    private lateinit var startButton: Button
 
     @FXML
     private lateinit var nextStepButton: Button
@@ -51,9 +56,8 @@ class MainController {
         if (result.isPresent) {
             val input = File(result.get())
             if (input.exists()) {
-                if (input.length() != 0L && input.canRead() && !input.isDirectory ) {
-                    if (graphWrapper.getGraphFromFile(input.readLines()))
-                        commentText.text = "Graph read from file"
+                if (input.length() != 0L && input.canRead() && !input.isDirectory) {
+                    if (graphWrapper.getGraphFromFile(input.readLines())) commentText.text = "Graph read from file"
                     else commentText.text = "Incorrect data in file"
                 } else commentText.text = "File must be not empty or must not be a directory"
             } else commentText.text = "There are no such file"
@@ -93,16 +97,20 @@ class MainController {
         edgeDialog.setResultConverter { dialogButton ->
             if (dialogButton === inputButtonType) {
                 return@setResultConverter arrayListOf<String>(
-                    firstEdgeField.text,
-                    secondEdgeField.text,
-                    edgeWeightField.text
+                    firstEdgeField.text, secondEdgeField.text, edgeWeightField.text
                 )
             }
             null
         }
         val result = edgeDialog.showAndWait()
         if (result.isPresent) {
-            graphWrapper.addInputEdge(result.get())
+            val arr = result.get()
+            commentText.text = graphWrapper.addInputEdge(arr)
+            if (commentText.text == "Edge added") {
+                graphPane.children.clear()
+                commentText.text = "Edge ${arr[0]} <-> ${arr[1]} added"
+                drawGraph()
+            }
         }
     }
 
@@ -132,7 +140,7 @@ class MainController {
                 changeButtonsState()
                 isRedacted = false
                 drawGraph()
-            } else{
+            } else {
                 commentText.text = "Graph is disconnected"
             }
         } else {
@@ -151,7 +159,7 @@ class MainController {
                 changeButtonsState()
                 isRedacted = false
                 drawGraph()
-            }else{
+            } else {
                 commentText.text = "Graph is disconnected"
             }
         } else {
@@ -160,20 +168,106 @@ class MainController {
         }
     }
 
+
     @FXML
     private fun onAddVertexButtonClick() {
+        val symbol = graphWrapper.getVacantVertexOrNull()
+        if (symbol != null) {
+            val newVertex = DrawVertex(symbol, graphCenterX, graphCenterY)
 
+            commentText.text = "Click to set the vertex. Pressed ESC to cancel."
+            graphWrapper.state = AlgorithmState.ADD_VERTEX
+            graphPane.children.add(newVertex.getCircle())
+            graphPane.children.add(newVertex.getText())
+            changeButtonsState() // Disable buttons
+
+            // Pressed ESC - cancel adding a vertex
+            toolsMenu.setOnKeyPressed { keyEvent ->
+                if (keyEvent.code == KeyCode.ESCAPE) {
+                    graphWrapper.state = AlgorithmState.START
+                    toolsMenu.setOnKeyPressed {}
+                    graphPane.setOnMouseClicked {}
+                    graphPane.setOnMouseMoved {}
+                    graphPane.children.remove(newVertex.getCircle())
+                    graphPane.children.remove(newVertex.getText())
+                    commentText.text = "Zero step. Graph can be edit"
+                    changeButtonsState()
+                }
+            }
+
+            graphPane.setOnMouseMoved {
+                newVertex.getCircle().centerX = it.x
+                newVertex.getCircle().centerY = it.y
+                newVertex.getText().x = it.x - nameAlignment
+                newVertex.getText().y = it.y + nameAlignment
+            }
+
+            // Click to setting a vertex
+            graphPane.setOnMouseClicked {
+                graphWrapper.state = AlgorithmState.START
+                graphPane.children.clear()
+                toolsMenu.setOnKeyPressed {}
+                graphPane.setOnMouseClicked {}
+                graphPane.setOnMouseMoved {}
+                graphWrapper.addInputVertex(newVertex)
+                commentText.text = "The vertex $symbol has been set"
+                changeButtonsState()
+                drawGraph()
+            }
+
+        } else commentText.text = "The maximum number of vertices has been reached"
+    }
+
+    private fun deleteHandlerReset() {
+        graphWrapper.state = AlgorithmState.START
+        graphWrapper.changeStrokeColour() // Restore stroke colour
+        toolsMenu.setOnKeyPressed {}
+        graphWrapper.getDrawEdges().forEach { it.getLine().setOnMouseClicked {} }
+        graphWrapper.getDrawVertices().forEach { it.getCircle().setOnMouseClicked {} }
+        graphPane.children.clear()
+        changeButtonsState()
+        drawGraph()
     }
 
     @FXML
     private fun onDeleteButtonClick() {
+        commentText.text = "Click on a vertex or edge to delete. Pressed ESC to cancel."
+        graphWrapper.state = AlgorithmState.DELETION
+        graphWrapper.changeStrokeColour() // Set deletion colour
+        changeButtonsState()              // Disable buttons
 
+        // Pressed ESC - cancel deletion
+        toolsMenu.setOnKeyPressed { keyEvent ->
+            if (keyEvent.code == KeyCode.ESCAPE) {
+                commentText.text = "Zero step. Graph can be edit"
+                deleteHandlerReset()
+                changeButtonsState()
+            }
+        }
+
+        // Deletion for edges
+        graphWrapper.getDrawEdges().forEach { edge ->
+            edge.getLine().setOnMouseClicked {
+                commentText.text = "Edge ${edge.getEdge().node1} <-> ${edge.getEdge().node2} has been deleted"
+                graphWrapper.deleteDrawObject(edge)
+                deleteHandlerReset()
+            }
+        }
+
+        // Deletion for vertices
+        graphWrapper.getDrawVertices().forEach { vertex ->
+            vertex.getCircle().setOnMouseClicked {
+                commentText.text = "Vertex ${vertex.getName()} has been deleted"
+                graphWrapper.deleteDrawObject(vertex)
+                deleteHandlerReset()
+            }
+        }
     }
 
     @FXML
     private fun onClickClearGraph() {
         graphPane.children.clear()
-        graphWrapper.clearGraphDrawables()
+        graphWrapper.clearDrawGraph()
     }
 
     fun setGraphWrapper(graphWrapper: KruskalWrapper) {
@@ -191,11 +285,13 @@ class MainController {
     private fun changeButtonsState() {
         when (graphWrapper.getAlgState()) {
             AlgorithmState.START -> {
+                startButton.isDisable = false
                 nextStepButton.isDisable = false
                 prevStepButton.isDisable = true
                 finishButton.isDisable = false
                 toolsMenu.isDisable = false
                 fileButton.isDisable = false
+                toolsMenu.items.forEach { it.isDisable = false }
             }
 
             AlgorithmState.IN_PROGRESS -> {
@@ -213,6 +309,15 @@ class MainController {
                 toolsMenu.isDisable = true
                 fileButton.isDisable = true
             }
+
+            AlgorithmState.ADD_VERTEX, AlgorithmState.DELETION -> {
+                startButton.isDisable = true
+                nextStepButton.isDisable = true
+                prevStepButton.isDisable = true
+                finishButton.isDisable = true
+                fileButton.isDisable = true
+                toolsMenu.items.forEach { it.isDisable = true }
+            }
         }
     }
 
@@ -226,7 +331,7 @@ class MainController {
                 deltaY = it.sceneY - i.getCircle().centerY
             }
             i.getCircle().setOnMouseDragged {
-                if ((it.sceneX < graphPane.width - dragBorder) and (it.sceneX > dragBorder) and (it.sceneY < graphPane.height - dragBorder) and (it.sceneY > dragBorder * 2)) {
+                if ((it.sceneX < graphPane.width - dragBorder) && (it.sceneX > dragBorder) && (it.sceneY < graphPane.height - dragBorder) && (it.sceneY > dragBorder * 2)) {
                     i.getCircle().centerX = it.sceneX - deltaX
                     i.getCircle().centerY = it.sceneY - deltaY
                     i.getText().x = i.getCircle().centerX - nameAlignment
