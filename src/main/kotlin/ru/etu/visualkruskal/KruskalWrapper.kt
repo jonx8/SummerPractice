@@ -1,5 +1,6 @@
 package ru.etu.visualkruskal
 
+import javafx.scene.shape.Line
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -16,11 +17,10 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
     init {
         setVerticesCoordinates()
         setEdgesCoordinates()
-        totalStepsNumber = drawableVertices.size
     }
 
-    fun getGraphFromFile(inputList: List<String>): Boolean{
-        if(kruskal.createGraph(inputList)) {
+    fun getGraphFromFile(inputList: List<String>): Boolean {
+        if (kruskal.createGraph(inputList)) {
             drawableEdges.clear()
             drawableVertices.clear()
             setVerticesCoordinates()
@@ -28,15 +28,6 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
             return true
         }
         return false
-    }
-    fun addInputEdge(inputList: ArrayList<String>) {
-        //to do
-    }
-
-    fun clearGraphDrawables() {
-        drawableVertices.clear()
-        drawableEdges.clear()
-        // later add vertices and edges deletion
     }
 
     private fun findVertexDrawing(symbol: Char): DrawVertex? {
@@ -60,14 +51,17 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
     }
 
     private fun setEdgesCoordinates() {
-        for (i in kruskal.getEdges()) {
-            setOneEdgeCoordinates(i)
+        val sortedEdges = kruskal.getEdges()
+        sortedEdges.sortBy { it.weight }
+        for (i in sortedEdges.indices) {
+            drawableEdges.add(DrawEdge(sortedEdges[i]))
+            setOneEdgeCoordinates(drawableEdges[i])
         }
     }
 
-    private fun setOneEdgeCoordinates(edge: Edge) { // пригодится для добавления только одного ребра
-        val firstVertex = findVertexDrawing(edge.node1)
-        val secondVertex = findVertexDrawing(edge.node2)
+    private fun setOneEdgeCoordinates(drawEdge: DrawEdge) {
+        val firstVertex = findVertexDrawing(drawEdge.getEdge().node1)
+        val secondVertex = findVertexDrawing(drawEdge.getEdge().node2)
 
         val x1 = firstVertex!!.getCircle().centerX
         val y1 = firstVertex.getCircle().centerY
@@ -75,19 +69,34 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
         val x2 = secondVertex!!.getCircle().centerX
         val y2 = secondVertex.getCircle().centerY
 
-        drawableEdges.add(DrawEdge(edge, x1, y1, x2, y2))
+        changeEdgeStart(drawEdge.getLine(), x1, y1)
+        changeEdgeEnd(drawEdge.getLine(), x2, y2)
+        changeWeightText(drawEdge)
     }
 
-    fun stepBack() {
-        if (stepNumber < 1) return
-        stepNumber -= 1
-        doSteps()
+    private fun changeEdgeStart(line: Line, x: Double, y: Double) {
+        line.startX = x
+        line.startY = y
     }
 
-    fun stepForward() {
-        if (stepNumber > totalStepsNumber) return
-        stepNumber += 1
-        doSteps()
+    private fun changeEdgeEnd(line: Line, x: Double, y: Double) {
+        line.endX = x
+        line.endY = y
+    }
+
+    private fun changeWeightText(edge: DrawEdge) {
+        edge.getWeightText().x =
+            weightAlignment + edge.getLine().startX + ((edge.getLine().endX - edge.getLine().startX) / 2)
+        edge.getWeightText().y =
+            -weightAlignment + edge.getLine().startY + ((edge.getLine().endY - edge.getLine().startY) / 2)
+    }
+
+    fun addInputEdge(inputList: ArrayList<String>) {
+
+    }
+
+    fun clearGraphDrawables() {
+
     }
 
     private fun doSteps() {
@@ -96,45 +105,88 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
             totalStepsNumber -> AlgorithmState.FINISHED
             else -> AlgorithmState.IN_PROGRESS
         }
-        val newEdges = kruskal.getGraphByStep(stepNumber)
-        for (i in drawableEdges.indices) {
-            drawableEdges[i].setEdge(newEdges[i])
-            drawableEdges[i].changeAppearance()
+        if (kruskal.getEdges().size > 0) {
+            val newEdges = kruskal.getGraphByStep(stepNumber)
+            for (i in drawableEdges.indices) {
+                drawableEdges[i].setEdge(newEdges[i])
+                drawableEdges[i].changeAppearance()
+            }
         }
     }
 
-    fun initialGraphState() {
+    fun stepBack(): String {
+        if (stepNumber < 1) return "Wrong step number"
+        stepNumber -= 1
+        doSteps()
+        return if (stepNumber > 0) {
+            drawableEdges[stepNumber - 1].getEdge().toString()
+        } else {
+            "Zero step. Graph can be redacted"
+        }
+
+    }
+
+    fun stepForward(): String {
+        if (stepNumber > totalStepsNumber) return "Wrong step number"
+        stepNumber += 1
+        doSteps()
+        return if (stepNumber < totalStepsNumber) {
+            drawableEdges[stepNumber - 1].getEdge().toString()
+        } else {
+            "The last step. ${drawableEdges[stepNumber - 1].getEdge()}\n" +
+                    "MST weight is ${kruskal.getWeight()}."
+        }
+    }
+
+    fun initialGraphState(): String {
         stepNumber = 0
         doSteps()
+        return "Zero step. Graph can be redacted"
     }
 
-    fun finalGraphState() {
+    fun finalGraphState(): String {
         stepNumber = totalStepsNumber
         doSteps()
+        return "The last step. ${drawableEdges[stepNumber - 1].getEdge()}\n" +
+                "MST weight is ${kruskal.getWeight()}."
     }
 
-    fun getCircles(): ArrayList<javafx.scene.shape.Circle> {
-        val drawableCircles = ArrayList<javafx.scene.shape.Circle>()
-        drawableVertices.forEach { drawableCircles.add(it.getCircle()) }
-        return drawableCircles
-    }
-
-    fun getTexts(type: String): ArrayList<javafx.scene.text.Text> {
-        val texts = ArrayList<javafx.scene.text.Text>()
-        if (type == "Circles") {
-            drawableVertices.forEach { texts.add(it.getText()) }
-        } else {
-            drawableEdges.forEach { texts.add(it.getWeightText()) }
+    fun changeEdgesAfterDrag(drawVertex: DrawVertex) {
+        for (i in drawableEdges) {
+            if (drawVertex.getName() == i.getEdge().node1) {
+                changeEdgeStart(i.getLine(), drawVertex.getCircle().centerX, drawVertex.getCircle().centerY)
+                changeWeightText(i)
+            }
+            if (drawVertex.getName() == i.getEdge().node2) {
+                changeEdgeEnd(i.getLine(), drawVertex.getCircle().centerX, drawVertex.getCircle().centerY)
+                changeWeightText(i)
+            }
         }
-        return texts
     }
 
-    fun getLines(): ArrayList<javafx.scene.shape.Line> {
-        val drawableLines = ArrayList<javafx.scene.shape.Line>()
-        drawableEdges.forEach { drawableLines.add(it.getLine()) }
-        return drawableLines
+    fun findTree() {
+        drawableEdges.clear()
+        setEdgesCoordinates()
+        kruskal.startAgain()
+        kruskal.doAlgorithm()
+
+        val tempEdges = kruskal.getEdges()
+        for (i in tempEdges.indices) {
+            if ((i == tempEdges.size - 1)) {
+                totalStepsNumber = i + 1
+                break
+            }
+            if ((tempEdges[i].state == EdgeState.INCLUDED) and (tempEdges[i + 1].state == EdgeState.NOT_SEEN)) {
+                totalStepsNumber = i + 1
+                break
+            }
+        }
+
     }
 
-    fun returnAlgState(): AlgorithmState = this.state
+    fun getAlgState(): AlgorithmState = this.state
+    fun getDrawVertices(): ArrayList<DrawVertex> = drawableVertices
+    fun getDrawEdges(): ArrayList<DrawEdge> = drawableEdges
+    fun getConnectivity(): Boolean = kruskal.isGraphConnected()
 
 }

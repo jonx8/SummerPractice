@@ -7,6 +7,7 @@ import javafx.scene.layout.Pane
 import javafx.scene.text.Text
 import java.io.File
 
+const val dragBorder = 40
 
 class MainController {
     @FXML
@@ -27,8 +28,12 @@ class MainController {
     @FXML
     private lateinit var finishButton: Button
 
+    @FXML
+    private lateinit var fileButton: Button
 
     private lateinit var graphWrapper: KruskalWrapper
+
+    private var isRedacted = true
 
     @FXML
     private fun onClickFilePathDialog() {
@@ -45,18 +50,17 @@ class MainController {
         graphPane.children.clear()
         if (result.isPresent) {
             val input = File(result.get())
-            if(input.exists()) {
-                if(input.length() != 0L && input.canRead()) {
+            if (input.exists()) {
+                if (input.length() != 0L && input.canRead() && !input.isDirectory ) {
                     if (graphWrapper.getGraphFromFile(input.readLines()))
                         commentText.text = "Graph read from file"
                     else commentText.text = "Incorrect data in file"
-                }
-                else commentText.text = "File must be not empty"
-            }
-            else commentText.text = "There are no such file"
+                } else commentText.text = "File must be not empty or must not be a directory"
+            } else commentText.text = "There are no such file"
         }
         drawGraph()
     }
+
 
     @FXML
     private fun onClickAddEdgeDialog() {
@@ -96,55 +100,70 @@ class MainController {
             }
             null
         }
-
         val result = edgeDialog.showAndWait()
         if (result.isPresent) {
             graphWrapper.addInputEdge(result.get())
-            /*
-            val arr = result.get()
-            commentText.text = "first - ${arr[0]} second - ${arr[1]} weight ${arr[2]} " //test, should be deleted later
-             */
         }
-
     }
 
     @FXML
     private fun onStartButtonClick() {
         graphPane.children.clear()
-        graphWrapper.initialGraphState()
         drawGraph()
+        commentText.text = graphWrapper.initialGraphState()
         changeButtonsState()
+        isRedacted = true
     }
 
     @FXML
     private fun onStepPrevButtonClick() {
-        graphPane.children.clear()
-        graphWrapper.stepBack()
-        drawGraph()
+        commentText.text = graphWrapper.stepBack()
         changeButtonsState()
+        if (graphWrapper.getAlgState() == AlgorithmState.START) isRedacted = true
     }
 
     @FXML
     private fun onStepNextButtonClick() {
-        graphPane.children.clear()
-        graphWrapper.stepForward()
-        drawGraph()
-        changeButtonsState()
+        if (isRedacted) {
+            if (graphWrapper.getConnectivity()) {
+                graphPane.children.clear()
+                graphWrapper.findTree()
+                commentText.text = graphWrapper.stepForward()
+                changeButtonsState()
+                isRedacted = false
+                drawGraph()
+            } else{
+                commentText.text = "Graph is disconnected"
+            }
+        } else {
+            commentText.text = graphWrapper.stepForward()
+            changeButtonsState()
+        }
     }
 
     @FXML
     private fun onFinishButtonClick() {
-        graphPane.children.clear()
-        graphWrapper.finalGraphState()
-        drawGraph()
-        changeButtonsState()
+        if (isRedacted) {
+            if (graphWrapper.getConnectivity()) {
+                graphPane.children.clear()
+                graphWrapper.findTree()
+                commentText.text = graphWrapper.finalGraphState()
+                changeButtonsState()
+                isRedacted = false
+                drawGraph()
+            }else{
+                commentText.text = "Graph is disconnected"
+            }
+        } else {
+            commentText.text = graphWrapper.finalGraphState()
+            changeButtonsState()
+        }
     }
 
     @FXML
     private fun onAddVertexButtonClick() {
 
     }
-
 
     @FXML
     private fun onDeleteButtonClick() {
@@ -162,19 +181,21 @@ class MainController {
     }
 
     private fun drawGraph() {
-        graphPane.children.addAll(graphWrapper.getLines())
-        graphPane.children.addAll(graphWrapper.getTexts("Lines"))
-        graphPane.children.addAll(graphWrapper.getCircles())
-        graphPane.children.addAll(graphWrapper.getTexts("Circles"))
+        graphWrapper.getDrawEdges().forEach { graphPane.children.add(it.getLine()) }
+        graphWrapper.getDrawEdges().forEach { graphPane.children.add(it.getWeightText()) }
+        graphWrapper.getDrawVertices().forEach { graphPane.children.add(it.getCircle()) }
+        graphWrapper.getDrawVertices().forEach { graphPane.children.add(it.getText()) }
+        makeDraggableVertices()
     }
 
     private fun changeButtonsState() {
-        when (graphWrapper.returnAlgState()) {
+        when (graphWrapper.getAlgState()) {
             AlgorithmState.START -> {
                 nextStepButton.isDisable = false
                 prevStepButton.isDisable = true
                 finishButton.isDisable = false
                 toolsMenu.isDisable = false
+                fileButton.isDisable = false
             }
 
             AlgorithmState.IN_PROGRESS -> {
@@ -182,6 +203,7 @@ class MainController {
                 prevStepButton.isDisable = false
                 finishButton.isDisable = false
                 toolsMenu.isDisable = true
+                fileButton.isDisable = true
             }
 
             AlgorithmState.FINISHED -> {
@@ -189,6 +211,30 @@ class MainController {
                 prevStepButton.isDisable = false
                 finishButton.isDisable = true
                 toolsMenu.isDisable = true
+                fileButton.isDisable = true
+            }
+        }
+    }
+
+    private fun makeDraggableVertices() {
+        for (i in graphWrapper.getDrawVertices()) {
+            var deltaX = 0.0
+            var deltaY = 0.0
+
+            i.getCircle().setOnMousePressed {
+                deltaX = it.sceneX - i.getCircle().centerX
+                deltaY = it.sceneY - i.getCircle().centerY
+            }
+            i.getCircle().setOnMouseDragged {
+                if ((it.sceneX < graphPane.width - dragBorder) and (it.sceneX > dragBorder) and (it.sceneY < graphPane.height - dragBorder) and (it.sceneY > dragBorder * 2)) {
+                    i.getCircle().centerX = it.sceneX - deltaX
+                    i.getCircle().centerY = it.sceneY - deltaY
+                    i.getText().x = i.getCircle().centerX - nameAlignment
+                    i.getText().y = i.getCircle().centerY + nameAlignment
+                    graphWrapper.changeEdgesAfterDrag(i)
+                    i.getCircle().toFront()
+                    i.getText().toFront()
+                }
             }
         }
     }
