@@ -7,8 +7,9 @@ import kotlin.math.sin
 const val graphCenterX = 290.0
 const val graphCenterY = 265.0
 const val drawVerticesRadius = 231.0
+const val deletionColour = "#A91D11"
 
-class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmState = AlgorithmState.START) {
+class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = AlgorithmState.START) {
     private var stepNumber = 0
     private val drawableVertices = ArrayList<DrawVertex>()
     private val drawableEdges = ArrayList<DrawEdge>()
@@ -91,13 +92,72 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
             -weightAlignment + edge.getLine().startY + ((edge.getLine().endY - edge.getLine().startY) / 2)
     }
 
-    fun addInputEdge(inputList: ArrayList<String>) {
-
+    private fun inputEdgeValidation(inputList: ArrayList<String>): Boolean {
+        if (inputList.size != 3) return false
+        val weight = inputList.last().toIntOrNull()
+        return weight != null && inputList[0].length == 1 && inputList[1].length == 1
     }
 
-    fun clearGraphDrawables() {
-
+    fun getVacantVertexOrNull(): Char? {
+        for (symbol in 'a'..'z')
+            if (!kruskal.getNodes().containsKey(symbol)) return symbol
+        return null
     }
+
+    fun addInputEdge(inputList: ArrayList<String>): String {
+        var message = "Input data is not valid!"
+
+        if (inputEdgeValidation(inputList)) {
+            val node1 = inputList[0].first()
+            val node2 = inputList[1].first()
+            val weight = inputList[2].toInt()
+
+            // Vertices must be in the graph
+            if (!(node1 in kruskal.getNodes() && node2 in kruskal.getNodes()))
+                return message
+
+            message = kruskal.addEdge(node1, node2, weight)
+            if (message == "Edge added") {
+                drawableEdges.clear()
+                setEdgesCoordinates()
+            }
+        }
+        return message
+    }
+
+    fun addInputVertex(newVertex: DrawVertex) {
+        kruskal.addNode(newVertex.getName())
+        drawableVertices.add(newVertex)
+    }
+
+    fun deleteDrawObject(edge: DrawEdge) {
+        kruskal.delEdge(edge.getEdge().node1, edge.getEdge().node2)
+        drawableEdges.remove(edge)
+    }
+
+    fun deleteDrawObject(vertex: DrawVertex) {
+        val symbol = vertex.getName()
+        kruskal.delNode(symbol)
+        drawableEdges.removeAll { it.getEdge().node1 == symbol || it.getEdge().node2 == symbol }
+        drawableVertices.remove(vertex)
+    }
+
+    fun clearDrawGraph() {
+        kruskal.clearGraph()
+        drawableEdges.clear()
+        drawableVertices.clear()
+    }
+
+    fun changeStrokeColour() {
+        if (state == AlgorithmState.DELETION) {
+            drawableEdges.forEach { it.getLine().stroke = javafx.scene.paint.Color.web(deletionColour) }
+            drawableVertices.forEach { it.getCircle().stroke = javafx.scene.paint.Color.web(deletionColour) }
+        } else {
+            drawableEdges.forEach { it.getLine().stroke = javafx.scene.paint.Color.web(unseenColour) }
+            drawableVertices.forEach { it.getCircle().stroke = javafx.scene.paint.Color.web(borderColour) }
+        }
+    }
+
 
     private fun doSteps() {
         state = when (stepNumber) {
@@ -121,7 +181,7 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
         return if (stepNumber > 0) {
             drawableEdges[stepNumber - 1].getEdge().toString()
         } else {
-            "Zero step. Graph can be redacted"
+            "Zero step. Graph can be edit"
         }
 
     }
@@ -133,22 +193,20 @@ class KruskalWrapper(private val kruskal: Kruskal, private var state: AlgorithmS
         return if (stepNumber < totalStepsNumber) {
             drawableEdges[stepNumber - 1].getEdge().toString()
         } else {
-            "The last step. ${drawableEdges[stepNumber - 1].getEdge()}\n" +
-                    "MST weight is ${kruskal.getWeight()}."
+            "The last step. ${drawableEdges[stepNumber - 1].getEdge()}\n" + "MST weight is ${kruskal.getWeight()}."
         }
     }
 
     fun initialGraphState(): String {
         stepNumber = 0
         doSteps()
-        return "Zero step. Graph can be redacted"
+        return "Zero step. Graph can be edit"
     }
 
     fun finalGraphState(): String {
         stepNumber = totalStepsNumber
         doSteps()
-        return "The last step. ${drawableEdges[stepNumber - 1].getEdge()}\n" +
-                "MST weight is ${kruskal.getWeight()}."
+        return "The last step. ${drawableEdges[stepNumber - 1].getEdge()}\n" + "MST weight is ${kruskal.getWeight()}."
     }
 
     fun changeEdgesAfterDrag(drawVertex: DrawVertex) {

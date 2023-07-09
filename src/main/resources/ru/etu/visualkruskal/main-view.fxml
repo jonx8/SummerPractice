@@ -17,7 +17,7 @@
         <Pane fx:id="graphPane" layoutX="0.0" layoutY="40.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="410.0" prefWidth="580.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="40.0" />
         <HBox maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="800.0" style="-fx-background-color: #dedede;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <Button maxHeight="40.0" maxWidth="60.0" mnemonicParsing="false" onAction="#onClickFilePathDialog" prefHeight="40.0" prefWidth="60.0" style="-fx-background-color: transparent;" text="File">
+                <Button  fx:id="fileButton" maxHeight="40.0" maxWidth="60.0" mnemonicParsing="false" onAction="#onClickFilePathDialog" prefHeight="40.0" prefWidth="60.0" style="-fx-background-color: transparent;" text="File">
                     <font>
                         <Font size="16.0" />
                     </font>
@@ -25,9 +25,9 @@
                 <MenuButton fx:id="toolsMenu" maxHeight="40.0" maxWidth="100.0" minHeight="40.0" minWidth="100.0" mnemonicParsing="false" prefHeight="40.0" prefWidth="100.0" style="-fx-background-color: transparent;" stylesheets="@menuButtonStyle.css" text="Tools">
                     <items>
                         <MenuItem mnemonicParsing="false" onAction="#onClickAddEdgeDialog" text="Add Edge" />
-                        <MenuItem mnemonicParsing="false" text="Add Vertex" />
+                        <MenuItem mnemonicParsing="false" onAction="#onAddVertexButtonClick" text="Add Vertex" />
                         <MenuItem mnemonicParsing="false" onAction="#onClickClearGraph" text="Clear Graph" />
-                        <MenuItem mnemonicParsing="false" text="Delete Object" />
+                        <MenuItem mnemonicParsing="false" onAction="#onDeleteButtonClick" text="Delete Object" />
                     </items>
                     <font>
                         <Font size="16.0" />
@@ -46,7 +46,7 @@
         </TextFlow>
         <VBox layoutX="580.0" layoutY="300.0" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="150.0" prefWidth="220.0" spacing="8.0" style="-fx-border-color: #e3e3e3; -fx-background-color: #e3e3e3;" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="0.0">
             <children>
-                <Button maxHeight="-Infinity" mnemonicParsing="false" onAction="#onStartButtonClick" prefHeight="28.0" prefWidth="208.0" text="Start">
+                <Button  fx:id="startButton" maxHeight="-Infinity" mnemonicParsing="false" onAction="#onStartButtonClick" prefHeight="28.0" prefWidth="208.0" text="Start">
                     <font>
                         <Font size="15.0" />
                     </font>

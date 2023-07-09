@@ -6,7 +6,7 @@ import javafx.scene.text.Text
 
 const val circleRadius = 23.0
 const val borderColour = "#000000"
-const val vertexBorderWidth = 1.0
+const val vertexBorderWidth = 2.0
 const val circleFillColour = "#fff9f2"
 const val nameAlignment = 4.0
 
