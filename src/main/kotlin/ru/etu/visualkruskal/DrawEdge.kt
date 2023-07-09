@@ -14,21 +14,14 @@ const val discardedColour = "#000000"
 const val unseenColour = "#000000"
 
 
-class DrawEdge(private var edge: Edge, x1: Double, y1: Double, x2: Double, y2: Double) {
+class DrawEdge(private var edge: Edge) {
     private val line = Line()
     private val weightText = Text()
 
     init {
         line.strokeWidth = edgeBorderWidth
-        line.startX = x1
-        line.startY = y1
-        line.endX = x2
-        line.endY = y2
-
         weightText.text = edge.weight.toString()
         weightText.font = Font(13.0)
-        weightText.y = y1 + ((y2 - y1) / 2) - weightAlignment
-        weightText.x = x1 + ((x2 - x1) / 2) + weightAlignment
     }
 
     fun getEdge(): Edge = edge
@@ -43,7 +36,6 @@ class DrawEdge(private var edge: Edge, x1: Double, y1: Double, x2: Double, y2: D
                 line.style = discardedDashedStyle
                 line.stroke = javafx.scene.paint.Color.web(discardedColour)
             }
-
             EdgeState.INCLUDED -> line.stroke = javafx.scene.paint.Color.web(includedColour)
         }
     }
