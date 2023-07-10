@@ -269,6 +269,7 @@ class MainController {
 
     private fun drawGraph() {
         graphWrapper.getDrawEdges().forEach { graphPane.children.add(it.getLine()) }
+        graphWrapper.getDrawEdges().forEach { graphPane.children.add(it.getRectangular()) }
         graphWrapper.getDrawEdges().forEach { graphPane.children.add(it.getWeightText()) }
         graphWrapper.getDrawVertices().forEach { graphPane.children.add(it.getCircle()) }
         graphWrapper.getDrawVertices().forEach { graphPane.children.add(it.getText()) }
