@@ -15,11 +15,6 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
     private val drawableEdges = ArrayList<DrawEdge>()
     private var totalStepsNumber = 0
 
-    init {
-        setVerticesCoordinates()
-        setEdgesCoordinates()
-    }
-
     fun getGraphFromFile(inputList: List<String>): Boolean {
         if (kruskal.createGraph(inputList)) {
             drawableEdges.clear()
@@ -29,15 +24,6 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
             return true
         }
         return false
-    }
-
-    private fun findVertexDrawing(symbol: Char): DrawVertex? {
-        for (j in drawableVertices.indices) {
-            if (drawableVertices[j].getName() == symbol) {
-                return drawableVertices[j]
-            }
-        }
-        return null
     }
 
     private fun setVerticesCoordinates() {
@@ -61,8 +47,8 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
     }
 
     private fun setOneEdgeCoordinates(drawEdge: DrawEdge) {
-        val firstVertex = findVertexDrawing(drawEdge.getEdge().node1)
-        val secondVertex = findVertexDrawing(drawEdge.getEdge().node2)
+        val firstVertex = drawableVertices.find { it.getName() == drawEdge.getEdge().node1 }
+        val secondVertex = drawableVertices.find { it.getName() == drawEdge.getEdge().node2 }
 
         val x1 = firstVertex!!.getCircle().centerX
         val y1 = firstVertex.getCircle().centerY
@@ -181,7 +167,7 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
         return if (stepNumber > 0) {
             drawableEdges[stepNumber - 1].getEdge().toString()
         } else {
-            "Zero step. Graph can be edit"
+            "Zero step. Graph can be edited"
         }
 
     }
@@ -200,7 +186,7 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
     fun initialGraphState(): String {
         stepNumber = 0
         doSteps()
-        return "Zero step. Graph can be edit"
+        return "Zero step. Graph can be edited"
     }
 
     fun finalGraphState(): String {
@@ -242,6 +228,7 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
 
     }
 
+    fun oneVertexCheck():Boolean = kruskal.getNodes().size == 1
     fun getAlgState(): AlgorithmState = this.state
     fun getDrawVertices(): ArrayList<DrawVertex> = drawableVertices
     fun getDrawEdges(): ArrayList<DrawEdge> = drawableEdges
