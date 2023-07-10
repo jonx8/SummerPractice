@@ -60,7 +60,7 @@ class MainController {
                     if (graphWrapper.getGraphFromFile(input.readLines())) commentText.text = "Graph read from file"
                     else commentText.text = "Incorrect data in file"
                 } else commentText.text = "File must be not empty or must not be a directory"
-            } else commentText.text = "There are no such file"
+            } else commentText.text = "There is no such file"
         }
         drawGraph()
     }
@@ -133,7 +133,7 @@ class MainController {
     @FXML
     private fun onStepNextButtonClick() {
         if (isRedacted) {
-            if (graphWrapper.getConnectivity()) {
+            if (graphWrapper.getConnectivity() && !graphWrapper.oneVertexCheck()) {
                 graphPane.children.clear()
                 graphWrapper.findTree()
                 commentText.text = graphWrapper.stepForward()
@@ -141,7 +141,7 @@ class MainController {
                 isRedacted = false
                 drawGraph()
             } else {
-                commentText.text = "Graph is disconnected"
+                commentText.text = "Graph is disconnected or there is only one vertex in the graph"
             }
         } else {
             commentText.text = graphWrapper.stepForward()
@@ -152,7 +152,7 @@ class MainController {
     @FXML
     private fun onFinishButtonClick() {
         if (isRedacted) {
-            if (graphWrapper.getConnectivity()) {
+            if (graphWrapper.getConnectivity() && !graphWrapper.oneVertexCheck()) {
                 graphPane.children.clear()
                 graphWrapper.findTree()
                 commentText.text = graphWrapper.finalGraphState()
@@ -160,7 +160,7 @@ class MainController {
                 isRedacted = false
                 drawGraph()
             } else {
-                commentText.text = "Graph is disconnected"
+                commentText.text = "Graph is disconnected or there is only one vertex in the graph"
             }
         } else {
             commentText.text = graphWrapper.finalGraphState()
@@ -175,7 +175,7 @@ class MainController {
         if (symbol != null) {
             val newVertex = DrawVertex(symbol, graphCenterX, graphCenterY)
 
-            commentText.text = "Click to set the vertex. Pressed ESC to cancel."
+            commentText.text = "Click to set the vertex. Press ESC to cancel."
             graphWrapper.state = AlgorithmState.ADD_VERTEX
             graphPane.children.add(newVertex.getCircle())
             graphPane.children.add(newVertex.getText())
@@ -190,7 +190,7 @@ class MainController {
                     graphPane.setOnMouseMoved {}
                     graphPane.children.remove(newVertex.getCircle())
                     graphPane.children.remove(newVertex.getText())
-                    commentText.text = "Zero step. Graph can be edit"
+                    commentText.text = "Zero step. Graph can be edited"
                     changeButtonsState()
                 }
             }
@@ -231,7 +231,7 @@ class MainController {
 
     @FXML
     private fun onDeleteButtonClick() {
-        commentText.text = "Click on a vertex or edge to delete. Pressed ESC to cancel."
+        commentText.text = "Click on a vertex or edge to delete. Press ESC to cancel."
         graphWrapper.state = AlgorithmState.DELETION
         graphWrapper.changeStrokeColour() // Set deletion colour
         changeButtonsState()              // Disable buttons
@@ -239,7 +239,7 @@ class MainController {
         // Pressed ESC - cancel deletion
         toolsMenu.setOnKeyPressed { keyEvent ->
             if (keyEvent.code == KeyCode.ESCAPE) {
-                commentText.text = "Zero step. Graph can be edit"
+                commentText.text = "Zero step. Graph can be edited"
                 deleteHandlerReset()
                 changeButtonsState()
             }
