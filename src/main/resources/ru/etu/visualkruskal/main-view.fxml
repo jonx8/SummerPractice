@@ -17,7 +17,7 @@
         <Pane fx:id="graphPane" layoutX="0.0" layoutY="40.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="410.0" prefWidth="580.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="220.0" AnchorPane.topAnchor="40.0" />
         <HBox maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="40.0" prefWidth="800.0" style="-fx-background-color: #dedede;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <Button  fx:id="fileButton" maxHeight="40.0" maxWidth="60.0" mnemonicParsing="false" onAction="#onClickFilePathDialog" prefHeight="40.0" prefWidth="60.0" style="-fx-background-color: transparent;" text="File">
+                <Button  fx:id="fileButton" maxHeight="40.0" maxWidth="60.0" mnemonicParsing="false" onAction="#onFileButtonClick" prefHeight="40.0" prefWidth="60.0" style="-fx-background-color: transparent;" text="File">
                     <font>
                         <Font size="16.0" />
                     </font>

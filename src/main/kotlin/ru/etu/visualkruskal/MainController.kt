@@ -6,6 +6,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Pane
 import javafx.scene.text.Text
+import javafx.stage.FileChooser
 import java.io.File
 
 const val dragBorder = 40
@@ -41,26 +42,18 @@ class MainController {
     private var isRedacted = true
 
     @FXML
-    private fun onClickFilePathDialog() {
-        val fileDialog = TextInputDialog()
-        fileDialog.title = null
-        fileDialog.graphic = null
-        fileDialog.headerText = "Enter path, please"
-        fileDialog.contentText = "Path:"
-        fileDialog.editor.text = "/home/"
-        fileDialog.editor.style =
-            " -fx-max-width:300px; -fx-max-height: 20px; -fx-pref-width: 300px; -fx-pref-height: 20px;"
-
-        val result = fileDialog.showAndWait()
+    private fun onFileButtonClick() {
+        val fileChooser = FileChooser()
+        fileChooser.extensionFilters.add(FileChooser.ExtensionFilter("TEXT files (*.txt)", "*.txt"))
+        fileChooser.title = "Choose a .txt file for graph reading"
+        fileChooser.initialDirectory = File(System.getProperty("user.home"))
+        val result = fileChooser.showOpenDialog(graphPane.scene.window)
         graphPane.children.clear()
-        if (result.isPresent) {
-            val input = File(result.get())
-            if (input.exists()) {
-                if (input.length() != 0L && input.canRead() && !input.isDirectory) {
-                    if (graphWrapper.getGraphFromFile(input.readLines())) commentText.text = "Graph read from file"
-                    else commentText.text = "Incorrect data in file"
-                } else commentText.text = "File must be not empty or must not be a directory"
-            } else commentText.text = "There is no such file"
+        if (result != null) {
+            if (result.length() != 0L && result.canRead()) {
+                if (graphWrapper.getGraphFromFile(result.readLines())) commentText.text = "Graph read from file"
+                else commentText.text = "Incorrect data in file"
+            } else commentText.text = "File must not be empty"
         }
         drawGraph()
     }
@@ -323,17 +316,10 @@ class MainController {
 
     private fun makeDraggableVertices() {
         for (i in graphWrapper.getDrawVertices()) {
-            var deltaX = 0.0
-            var deltaY = 0.0
-
-            i.getCircle().setOnMousePressed {
-                deltaX = it.sceneX - i.getCircle().centerX
-                deltaY = it.sceneY - i.getCircle().centerY
-            }
             i.getCircle().setOnMouseDragged {
-                if ((it.sceneX < graphPane.width - dragBorder) && (it.sceneX > dragBorder) && (it.sceneY < graphPane.height - dragBorder) && (it.sceneY > dragBorder * 2)) {
-                    i.getCircle().centerX = it.sceneX - deltaX
-                    i.getCircle().centerY = it.sceneY - deltaY
+                if ((it.x < graphPane.width - dragBorder) && (it.x > dragBorder / 2) && (it.y < graphPane.height - dragBorder) && (it.y > dragBorder)) {
+                    i.getCircle().centerX = it.x
+                    i.getCircle().centerY = it.y
                     i.getText().x = i.getCircle().centerX - nameAlignment
                     i.getText().y = i.getCircle().centerY + nameAlignment
                     graphWrapper.changeEdgesAfterDrag(i)
