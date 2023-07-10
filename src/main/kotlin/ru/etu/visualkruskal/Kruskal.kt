@@ -231,11 +231,11 @@ class Kruskal {
         }
     }
 
-    fun getWeight(): Int{
+    fun getWeight(step: Int = edges.size): Int{
         var weight = 0
-        for(edge in edges){
-            if(edge.state == EdgeState.INCLUDED)
-                weight += edge.weight
+        for(i in 0 until  step){
+            if(edges[i].state == EdgeState.INCLUDED)
+                weight += edges[i].weight
         }
         return weight
     }
