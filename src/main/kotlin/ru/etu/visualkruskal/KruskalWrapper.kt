@@ -165,7 +165,7 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
         stepNumber -= 1
         doSteps()
         return if (stepNumber > 0) {
-            drawableEdges[stepNumber - 1].getEdge().toString()
+            "${drawableEdges[stepNumber - 1].getEdge()}\n" + "MST weight is ${kruskal.getWeight(stepNumber)}."
         } else {
             "Zero step. Graph can be edited"
         }
@@ -177,7 +177,7 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
         stepNumber += 1
         doSteps()
         return if (stepNumber < totalStepsNumber) {
-            drawableEdges[stepNumber - 1].getEdge().toString()
+            "${drawableEdges[stepNumber - 1].getEdge()}\n" + "MST weight is ${kruskal.getWeight(stepNumber)}."
         } else {
             "The last step. ${drawableEdges[stepNumber - 1].getEdge()}\n" + "MST weight is ${kruskal.getWeight()}."
         }
