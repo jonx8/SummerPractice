@@ -11,14 +11,14 @@ const val backgroundSize = 24.0
 const val edgeBorderWidth = 3.0
 const val weightAlignment = 3.0
 const val backgroundAlignmentX = 5.0
-const val backgroundAlignmentY = 22.5
+const val backgroundAlignmentY = 21.0
 
 const val includedColour = "#42AAFF"
 const val discardedDashedStyle = " -fx-stroke-dash-array: 5;"
 const val discardedColour = "#000000"
 const val unseenColour = "#000000"
 const val weightColour = "#000000"
-const val backgroundColour = "#F0E68C"
+const val backgroundColour = "#98FB98"
 
 
 class DrawEdge(private var edge: Edge) {
