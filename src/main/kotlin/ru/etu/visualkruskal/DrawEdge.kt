@@ -6,11 +6,14 @@ import javafx.scene.shape.Rectangle
 import javafx.scene.text.Font
 import javafx.scene.text.Text
 
-const val backgroundSize = 24.0
+const val weightSize = 20.0
+const val symbolWidth = weightSize / 1.628
+const val symbolHeight = weightSize * 1.628
+const val backgroundEndWidth = 5.0 // Width of extra space on the right part of the rectangular
 
 const val edgeBorderWidth = 3.0
 const val weightAlignment = 3.0
-const val backgroundAlignmentX = 5.0
+const val backgroundAlignmentX = 0.0
 const val backgroundAlignmentY = 21.0
 
 const val includedColour = "#42AAFF"
@@ -30,11 +33,11 @@ class DrawEdge(private var edge: Edge) {
         line.strokeWidth = edgeBorderWidth
         line.stroke = Color.web(unseenColour)
         weightText.text = edge.weight.toString()
-        weightText.font = Font(20.0)
+        weightText.font = Font(weightSize)
         weightText.fill = Color.web(weightColour)
         background.fill = Color.web(backgroundColour)
-        background.height = backgroundSize
-        background.width = backgroundSize
+        background.height = symbolHeight
+        background.width = symbolWidth * weightText.text.length + backgroundEndWidth
     }
 
     fun getEdge(): Edge = edge
