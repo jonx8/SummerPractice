@@ -1,26 +1,40 @@
 package ru.etu.visualkruskal
 
-import javafx.scene.text.Text
+import javafx.scene.paint.Color
 import javafx.scene.shape.Line
+import javafx.scene.shape.Rectangle
 import javafx.scene.text.Font
+import javafx.scene.text.Text
 
-const val edgeBorderWidth = 4.0
+const val backgroundSize = 24.0
+
+const val edgeBorderWidth = 3.0
 const val weightAlignment = 3.0
+const val backgroundAlignmentX = 5.0
+const val backgroundAlignmentY = 21.0
 
 const val includedColour = "#42AAFF"
 const val discardedDashedStyle = " -fx-stroke-dash-array: 5;"
 const val discardedColour = "#000000"
 const val unseenColour = "#000000"
+const val weightColour = "#000000"
+const val backgroundColour = "#98FB98"
 
 
 class DrawEdge(private var edge: Edge) {
     private val line = Line()
     private val weightText = Text()
+    private val background = Rectangle()
 
     init {
         line.strokeWidth = edgeBorderWidth
+        line.stroke = Color.web(unseenColour)
         weightText.text = edge.weight.toString()
-        weightText.font = Font(13.0)
+        weightText.font = Font(20.0)
+        weightText.fill = Color.web(weightColour)
+        background.fill = Color.web(backgroundColour)
+        background.height = backgroundSize
+        background.width = backgroundSize
     }
 
     fun getEdge(): Edge = edge
@@ -33,13 +47,17 @@ class DrawEdge(private var edge: Edge) {
     fun changeAppearance() {
         line.style = null
         when (edge.state) {
-            EdgeState.NOT_SEEN -> line.stroke = javafx.scene.paint.Color.web(unseenColour)
+            EdgeState.NOT_SEEN -> line.stroke = Color.web(unseenColour)
             EdgeState.DISCARDED -> {
                 line.style = discardedDashedStyle
-                line.stroke = javafx.scene.paint.Color.web(discardedColour)
+                line.stroke = Color.web(discardedColour)
             }
 
-            EdgeState.INCLUDED -> line.stroke = javafx.scene.paint.Color.web(includedColour)
+            EdgeState.INCLUDED -> line.stroke = Color.web(includedColour)
         }
+    }
+
+    fun getRectangular(): Rectangle {
+        return background
     }
 }

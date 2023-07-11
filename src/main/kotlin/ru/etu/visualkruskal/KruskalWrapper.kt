@@ -76,6 +76,8 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
             weightAlignment + edge.getLine().startX + ((edge.getLine().endX - edge.getLine().startX) / 2)
         edge.getWeightText().y =
             -weightAlignment + edge.getLine().startY + ((edge.getLine().endY - edge.getLine().startY) / 2)
+        edge.getRectangular().x = edge.getWeightText().x - backgroundAlignmentX
+        edge.getRectangular().y = edge.getWeightText().y - backgroundAlignmentY
     }
 
     private fun inputEdgeValidation(inputList: ArrayList<String>): Boolean {
@@ -228,7 +230,7 @@ class KruskalWrapper(private val kruskal: Kruskal, var state: AlgorithmState = A
 
     }
 
-    fun oneVertexCheck():Boolean = kruskal.getNodes().size == 1
+    fun oneVertexCheck(): Boolean = kruskal.getNodes().size == 1
     fun getAlgState(): AlgorithmState = this.state
     fun getDrawVertices(): ArrayList<DrawVertex> = drawableVertices
     fun getDrawEdges(): ArrayList<DrawEdge> = drawableEdges
